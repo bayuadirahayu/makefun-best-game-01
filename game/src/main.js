@@ -8,6 +8,7 @@ import { Input } from './input.js';
 import { Particles } from './particles.js';
 import { Player } from './player.js';
 import { Renderer } from './render.js';
+import { Renderer3D } from './render3d.js';
 import { applyShot, shotFromUrl } from './shots.js';
 import { loadBest, saveBest } from './storage.js';
 import { World } from './world.js';
@@ -19,6 +20,10 @@ class Game {
     this.audio = new AudioEngine();
     this.fx = new Particles();
     this.renderer = new Renderer(canvas);
+    // The 3D diorama paints the world on the canvas below; this canvas is
+    // its overlay (HUD, screens, particles), transparent where it is empty.
+    this.renderer.overlay = true;
+    this.renderer3d = new Renderer3D(document.getElementById('gl'));
     this.best = loadBest();
     this.statusEl = document.getElementById('status');
     this.seed = 1;
@@ -167,6 +172,7 @@ class Game {
   }
 
   render() {
+    this.renderer3d.draw(this, this.time);
     this.renderer.draw(this, this.time);
   }
 

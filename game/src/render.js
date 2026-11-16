@@ -21,25 +21,39 @@ export class Renderer {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this._bg = null;
+    // Overlay mode: the three.js diorama paints the world on the canvas
+    // below, and this canvas only adds the HUD, screens, particles and
+    // vignette on top of it (its background stays transparent).
+    this.overlay = false;
   }
 
   draw(state, t) {
     const ctx = this.ctx;
     const { world, player, fx } = state;
-    ctx.save();
-    const off = fx.offset();
-    ctx.translate(off.x, off.y);
+    if (!this.overlay) {
+      ctx.save();
+      const off = fx.offset();
+      ctx.translate(off.x, off.y);
 
-    this._drawBackground(ctx, world, t);
-    this._drawCave(ctx, world);
-    this._drawShards(ctx, world, t);
-    this._drawPickups(ctx, world, t);
-    this._drawWisps(ctx, world, t);
-    this._drawSpikes(ctx, world);
-    if (player.alive || state.phase === 'play') this._drawPlayer(ctx, player, t);
-    fx.draw(ctx);
-    this._drawLanternLight(ctx, player, world);
-    ctx.restore();
+      this._drawBackground(ctx, world, t);
+      this._drawCave(ctx, world);
+      this._drawShards(ctx, world, t);
+      this._drawPickups(ctx, world, t);
+      this._drawWisps(ctx, world, t);
+      this._drawSpikes(ctx, world);
+      if (player.alive || state.phase === 'play') this._drawPlayer(ctx, player, t);
+      fx.draw(ctx);
+      this._drawLanternLight(ctx, player, world);
+      ctx.restore();
+    } else {
+      // Screen shake still moves the overlay a touch, so hits feel physical.
+      ctx.save();
+      const off = fx.offset();
+      ctx.translate(off.x, off.y);
+      fx.draw(ctx);
+      ctx.restore();
+      this._drawLanternLight(ctx, player, world);
+    }
 
     if (state.phase === 'play' || state.phase === 'pause') this._drawHUD(ctx, state);
     if (state.surgeBanner > 0) this._drawSurgeBanner(ctx, state);
