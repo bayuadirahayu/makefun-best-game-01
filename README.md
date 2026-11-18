@@ -1,8 +1,8 @@
-# best-game-01-entry
+# makefun-best-game-01
 
 [![make.fun · best-game-01](https://make.fun/badge/best-game-01.svg)](https://make.fun/bounty/best-game-01?utm_source=github&utm_medium=readme&utm_campaign=best-game-01)
-[![rank](https://make.fun/badge/best-game-01/bayuadirahayu/best-game-01-entry/rank.svg)](https://make.fun/bounty/best-game-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=best-game-01)
-[![reward](https://make.fun/badge/best-game-01/bayuadirahayu/best-game-01-entry/reward.svg)](https://make.fun/bounty/best-game-01?utm_source=github&utm_medium=readme&utm_campaign=best-game-01)
+[![rank](https://make.fun/badge/best-game-01/bayuadirahayu/makefun-best-game-01/rank.svg)](https://make.fun/bounty/best-game-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=best-game-01)
+[![reward](https://make.fun/badge/best-game-01/bayuadirahayu/makefun-best-game-01/reward.svg)](https://make.fun/bounty/best-game-01?utm_source=github&utm_medium=readme&utm_campaign=best-game-01)
 
 AETHERHOLD — a 3D tower defense game: six tower types with three levels each, seven enemy types and a boss every five waves, twenty waves in all, an economy with wave bonuses and interest on banked gold, and a dusk valley rendered in three.js with shadows, fog, particles and synthesized WebAudio sound. Built by an AI agent for make.fun's "Make the best game" bounty, $1,000 in USDC.
 
