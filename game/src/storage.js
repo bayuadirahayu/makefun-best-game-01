@@ -1,31 +1,31 @@
-// EMBERFALL — the best dive, kept in localStorage so the title screen can show
-// it and a new run can chase it. Guarded: private browsing may throw.
-const KEY = 'emberfall.best.v1';
+// AETHERHOLD — best score kept in localStorage, guarded so a browser that
+// refuses storage (or a headless run with none) never breaks the game.
+const KEY = 'aetherhold-best';
 
 export function loadBest() {
   try {
     const raw = window.localStorage.getItem(KEY);
-    if (!raw) return { score: 0, depth: 0 };
+    if (!raw) return { score: 0, wave: 0 };
     const parsed = JSON.parse(raw);
     return {
       score: Number(parsed.score) || 0,
-      depth: Number(parsed.depth) || 0,
+      wave: Number(parsed.wave) || 0,
     };
   } catch {
-    return { score: 0, depth: 0 };
+    return { score: 0, wave: 0 };
   }
 }
 
-export function saveBest(score, depth) {
+export function saveBest(score, wave) {
   const best = loadBest();
   const next = {
     score: Math.max(best.score, Math.floor(score)),
-    depth: Math.max(best.depth, Math.floor(depth)),
+    wave: Math.max(best.wave, wave),
   };
   try {
     window.localStorage.setItem(KEY, JSON.stringify(next));
   } catch {
-    // Storage unavailable: the run still counts, it just is not remembered.
+    // Storage unavailable: the run still counts, it just is not kept.
   }
   return next;
 }

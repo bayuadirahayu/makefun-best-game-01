@@ -1,6 +1,6 @@
-// EMBERFALL — a tiny seeded random generator, so the cave, the shots and the
-// play-tests are all reproducible from one number. Mulberry32: small, fast, good
-// enough for a game, and its whole state fits in one integer.
+// AETHERHOLD — a tiny seeded random generator, so the map, the waves and
+// the screenshot scenes are all reproducible from one number. Mulberry32 is
+// small, fast and good enough for a game; its whole state fits in one integer.
 export function mulberry32(seed) {
   let a = seed >>> 0;
   return function next() {
@@ -12,8 +12,8 @@ export function mulberry32(seed) {
   };
 }
 
-// Smooth 1D value noise: a wobbling centre line for the cave walls, built from a
-// seeded random so the same seed always digs the same cavern.
+// Smooth 1D value noise from a seed: a wobbling line (the river bank, the
+// hill ridge) that is the same every time the same seed is used.
 export function makeNoise1D(seed, spacing) {
   const rand = mulberry32(seed);
   const knots = [];
@@ -43,4 +43,16 @@ export function randRange(rand, lo, hi) {
 
 export function pick(rand, arr) {
   return arr[Math.floor(rand() * arr.length)];
+}
+
+// Distance from a point to a line segment, for plot clearance and path math.
+export function distToSegment(px, pz, ax, az, bx, bz) {
+  const dx = bx - ax;
+  const dz = bz - az;
+  const len2 = dx * dx + dz * dz;
+  let t = len2 === 0 ? 0 : ((px - ax) * dx + (pz - az) * dz) / len2;
+  t = clamp(t, 0, 1);
+  const cx = ax + dx * t;
+  const cz = az + dz * t;
+  return Math.hypot(px - cx, pz - cz);
 }

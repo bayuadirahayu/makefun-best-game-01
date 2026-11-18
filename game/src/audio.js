@@ -1,6 +1,6 @@
-// EMBERFALL — every sound is synthesized with WebAudio: no audio files, no
-// network, just oscillators and filtered noise. The context only starts after a
-// player gesture (a click or a key), as browsers require, and M mutes it all.
+// AETHERHOLD — every sound is synthesized with WebAudio: no audio files, no
+// network, just oscillators and filtered noise. The context only starts after
+// a player gesture (a click or a key), as browsers require, and M mutes it.
 export class AudioEngine {
   constructor() {
     this.ctx = null;
@@ -66,33 +66,69 @@ export class AudioEngine {
     src.start(t0);
   }
 
-  // A shard pickup: a bright blip that climbs with the combo, so a streak
-  // literally sounds higher.
-  pickup(combo) {
-    const step = Math.min(combo, 12);
-    this._tone(520 + step * 42, 0.14, 'sine', 0.22, 780 + step * 42);
-    this._tone(1040 + step * 84, 0.1, 'triangle', 0.08);
+  // Tower placed: a low stone thud plus a bright chime on top.
+  place() {
+    this._tone(180, 0.16, 'triangle', 0.25, 90);
+    this._tone(660, 0.22, 'sine', 0.14, 990);
   }
 
-  hit() {
-    this._noise(0.22, 0.5, 900);
-    this._tone(140, 0.28, 'sawtooth', 0.3, 55);
+  // Tower upgraded: two rising notes.
+  upgrade() {
+    this._tone(523, 0.14, 'triangle', 0.2);
+    setTimeout(() => this._tone(784, 0.2, 'triangle', 0.2), 90);
   }
 
-  dash() {
-    this._noise(0.18, 0.22, 3200);
-    this._tone(300, 0.16, 'sine', 0.12, 640);
+  shoot() {
+    this._tone(880, 0.07, 'square', 0.05, 420);
   }
 
-  powerup() {
-    [523, 659, 784].forEach((f, i) => {
-      setTimeout(() => this._tone(f, 0.16, 'triangle', 0.18), i * 70);
+  cannon() {
+    this._noise(0.28, 0.32, 700);
+    this._tone(90, 0.25, 'sine', 0.3, 45);
+  }
+
+  frost() {
+    this._tone(1240, 0.22, 'sine', 0.1, 1860);
+    this._tone(1560, 0.18, 'sine', 0.06, 2100);
+  }
+
+  sniper() {
+    this._noise(0.12, 0.28, 4200);
+    this._tone(220, 0.1, 'sawtooth', 0.12, 70);
+  }
+
+  zap() {
+    this._noise(0.09, 0.2, 5200);
+    this._tone(1400, 0.08, 'square', 0.06, 300);
+  }
+
+  // A kill pays a little coin tick.
+  coin() {
+    this._tone(1320, 0.06, 'sine', 0.07, 1760);
+  }
+
+  // An enemy slips past the bastion: a dull horn of warning.
+  leak() {
+    this._tone(196, 0.4, 'sawtooth', 0.22, 98);
+    this._noise(0.3, 0.18, 500);
+  }
+
+  // A wave begins: a war horn, two notes.
+  horn() {
+    this._tone(147, 0.5, 'sawtooth', 0.16, 220);
+    setTimeout(() => this._tone(220, 0.45, 'sawtooth', 0.14, 294), 160);
+  }
+
+  // A boss wave: a low, longer horn.
+  bossHorn() {
+    [98, 123, 98].forEach((f, i) => {
+      setTimeout(() => this._tone(f, 0.55, 'sawtooth', 0.2, f * 0.8), i * 220);
     });
   }
 
-  surge() {
-    this._tone(98, 0.7, 'sawtooth', 0.2, 196);
-    this._noise(0.5, 0.12, 500);
+  // Not enough gold: a flat buzz.
+  error() {
+    this._tone(160, 0.14, 'square', 0.1, 120);
   }
 
   gameOver() {
@@ -107,10 +143,10 @@ export class AudioEngine {
     });
   }
 
-  // A soft low drone under everything, so the cave never feels silent.
+  // A soft low drone under everything, so the valley never feels silent.
   _startDrone() {
     const gain = this.ctx.createGain();
-    gain.gain.value = 0.045;
+    gain.gain.value = 0.04;
     gain.connect(this.master);
     const o1 = this.ctx.createOscillator();
     o1.type = 'sine';

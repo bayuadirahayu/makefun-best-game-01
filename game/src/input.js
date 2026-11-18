@@ -1,45 +1,68 @@
-// EMBERFALL — keyboard and mouse input. The lantern steers toward the mouse and
-// answers the arrow keys / WASD too; Space or a mouse click fires a flare dash.
-// Every key the game uses is tracked here, and nothing else is.
+// AETHERHOLD — keyboard and mouse input. The game reads clicks as queued
+// events (so one click never fires twice) and tracks the mouse in the
+// canvas's logical 1280x720 space, whatever the window size is. Dragging
+// pans the camera a little; the wheel zooms.
 export class Input {
   constructor(canvas) {
     this.keys = new Set();
+    this.pressedKeys = []; // single-press queue, consumed by the game
+    this.clicks = []; // queued {x, y} clicks in logical pixels
     this.mouseX = 640;
     this.mouseY = 360;
     this.mouseDown = false;
-    this.mouseMoved = false;
-    this.dashQueued = false;
-    this.anyKeyQueued = false;
+    this.wheelDelta = 0;
+    this.dragX = 0; // pixels dragged since last read
+    this.dragY = 0;
     this._canvas = canvas;
+    this._lastX = 0;
+    this._lastY = 0;
     this._onKeyDown = (e) => {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
         e.preventDefault();
       }
-      if (!e.repeat) {
-        this.anyKeyQueued = true;
-        if (e.key === ' ') this.dashQueued = true;
-      }
-      this.keys.add(e.key.length === 1 ? e.key.toLowerCase() : e.key);
+      const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      if (!e.repeat) this.pressedKeys.push(key);
+      this.keys.add(key);
     };
     this._onKeyUp = (e) => {
       this.keys.delete(e.key.length === 1 ? e.key.toLowerCase() : e.key);
     };
-    this._onMouseMove = (e) => {
+    this._toLogical = (e) => {
       const r = canvas.getBoundingClientRect();
       const sx = canvas.width / r.width;
       const sy = canvas.height / r.height;
-      this.mouseX = (e.clientX - r.left) * sx;
-      this.mouseY = (e.clientY - r.top) * sy;
-      this.mouseMoved = true;
+      return { x: (e.clientX - r.left) * sx, y: (e.clientY - r.top) * sy };
+    };
+    this._onMouseMove = (e) => {
+      const p = this._toLogical(e);
+      if (this.mouseDown) {
+        this.dragX += p.x - this._lastX;
+        this.dragY += p.y - this._lastY;
+      }
+      this._lastX = p.x;
+      this._lastY = p.y;
+      this.mouseX = p.x;
+      this.mouseY = p.y;
     };
     this._onMouseDown = (e) => {
-      this._onMouseMove(e);
+      const p = this._toLogical(e);
+      this._lastX = p.x;
+      this._lastY = p.y;
+      this.mouseX = p.x;
+      this.mouseY = p.y;
       this.mouseDown = true;
-      this.dashQueued = true;
-      this.anyKeyQueued = true;
     };
-    this._onMouseUp = () => {
+    this._onMouseUp = (e) => {
+      const p = this._toLogical(e);
       this.mouseDown = false;
+      // A click is a press and release in nearly the same spot.
+      if (Math.hypot(p.x - this._lastX, p.y - this._lastY) < 6) {
+        this.clicks.push({ x: p.x, y: p.y });
+      }
+    };
+    this._onWheel = (e) => {
+      e.preventDefault();
+      this.wheelDelta += e.deltaY;
     };
     this._onBlur = () => {
       this.keys.clear();
@@ -50,33 +73,36 @@ export class Input {
     canvas.addEventListener('mousemove', this._onMouseMove);
     canvas.addEventListener('mousedown', this._onMouseDown);
     window.addEventListener('mouseup', this._onMouseUp);
+    canvas.addEventListener('wheel', this._onWheel, { passive: false });
     window.addEventListener('blur', this._onBlur);
   }
 
-  // Steering: keys give a direction, otherwise the lantern chases the mouse.
-  steerVector() {
-    let x = 0;
-    let y = 0;
-    if (this.keys.has('ArrowLeft') || this.keys.has('a')) x -= 1;
-    if (this.keys.has('ArrowRight') || this.keys.has('d')) x += 1;
-    if (this.keys.has('ArrowUp') || this.keys.has('w')) y -= 1;
-    if (this.keys.has('ArrowDown') || this.keys.has('s')) y += 1;
-    return { x, y, keySteer: x !== 0 || y !== 0 };
-  }
-
-  pressed(code) {
+  held(code) {
     return this.keys.has(code);
   }
 
-  consumeDash() {
-    const d = this.dashQueued;
-    this.dashQueued = false;
+  consumePresses() {
+    const out = this.pressedKeys;
+    this.pressedKeys = [];
+    return out;
+  }
+
+  consumeClicks() {
+    const out = this.clicks;
+    this.clicks = [];
+    return out;
+  }
+
+  consumeWheel() {
+    const d = this.wheelDelta;
+    this.wheelDelta = 0;
     return d;
   }
 
-  consumeAnyKey() {
-    const k = this.anyKeyQueued;
-    this.anyKeyQueued = false;
-    return k;
+  consumeDrag() {
+    const d = { x: this.dragX, y: this.dragY };
+    this.dragX = 0;
+    this.dragY = 0;
+    return d;
   }
 }
